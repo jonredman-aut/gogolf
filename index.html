@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GoGolf</title>
+<title>RedGOLF</title>
 <meta name="theme-color" content="#1E4A34">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="GoGolf">
+<meta name="apple-mobile-web-app-title" content="RedGOLF">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛳</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -238,11 +238,11 @@ window.ggFail = function (title, detail) {
   if (document.getElementById("main")) show(); else document.addEventListener("DOMContentLoaded", show);
 };
 window.addEventListener("unhandledrejection", function (e) {
-  if (!window.ggStarted) window.ggFail("GoGolf couldn't start", String((e.reason && (e.reason.code || e.reason.message)) || e.reason));
+  if (!window.ggStarted) window.ggFail("RedGOLF couldn't start", String((e.reason && (e.reason.code || e.reason.message)) || e.reason));
 });
 setTimeout(function () {
-  if (!window.ggStarted) window.ggFail("GoGolf is taking too long to start",
-    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 6.");
+  if (!window.ggStarted) window.ggFail("RedGOLF is taking too long to start",
+    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 7.");
 }, 25000);
 window.addEventListener("error", function (e) {
   var msg = String(e.message || "");
@@ -250,18 +250,18 @@ window.addEventListener("error", function (e) {
     window.ggFail("There's a typo in index.html",
       "Something in the FIREBASE_CONFIG section can't be read (" + msg + "). The usual causes are curly quotes (“like this”) instead of straight quotes (\"like this\"), a missing comma at the end of a line, or pasting the whole 'const firebaseConfig = {' line inside the brackets.");
   } else if (!window.ggStarted) {
-    window.ggFail("GoGolf couldn't start", msg);
+    window.ggFail("RedGOLF couldn't start", msg);
   }
 });
 </script>
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V3l11 4-11 4"/><ellipse cx="9" cy="21" rx="5" ry="1.2"/></svg>GoGolf</div>
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V3l11 4-11 4"/><ellipse cx="9" cy="21" rx="5" ry="1.2"/></svg>RedGOLF</div>
   <div class="top-meta" id="topmeta"></div>
 </div></header>
 <div id="banner"></div>
-<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 6)</p></main>
+<main id="main" tabindex="-1"><p class="muted">Loading RedGOLF… (version 7)</p></main>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -374,11 +374,11 @@ function onWriteError(e){
   let code = e && e.code;
   if (code === "permission-denied") code = "invalid_argument";
   if (code === "resource-exhausted") code = "quota_exceeded";
-  if (code === "invalid_argument"){ S.readOnly = true; toast("That change was blocked by the server. Reload GoGolf and try again."); render(); }
-  else if (code === "quota_exceeded") toast("GoGolf's database is over its limit. Check your Firebase plan.");
+  if (code === "invalid_argument"){ S.readOnly = true; toast("That change was blocked by the server. Reload RedGOLF and try again."); render(); }
+  else if (code === "quota_exceeded") toast("RedGOLF's database is over its limit. Check your Firebase plan.");
   else toast("That didn't save. Check your connection and try again.");
 }
-const guard = () => { if (S.readOnly){ toast("GoGolf can't save changes right now. Reload and try again."); return false; } return true; };
+const guard = () => { if (S.readOnly){ toast("RedGOLF can't save changes right now. Reload and try again."); return false; } return true; };
 
 /* ---------- round lifecycle ---------- */
 function stopWatching(){ unsubs.forEach(u => { try { u(); } catch {} }); unsubs = []; }
@@ -516,7 +516,7 @@ function renderChrome(){
     ? `<span class="top-round">${esc(S.round.name)}</span><span class="chip-code" aria-label="Round code">${esc(S.code)}</span>` : "";
   const notes = [];
   if (SETUP_MSG) notes.push(SETUP_MSG);
-  if (S.readOnly) notes.push("GoGolf can't save changes right now. Check your connection and reload.");
+  if (S.readOnly) notes.push("RedGOLF can't save changes right now. Check your connection and reload.");
   $("#banner").innerHTML = notes.length ? `<div class="banner" style="margin-left:16px;margin-right:16px">${notes.map(esc).join("<br>")}</div>` : "";
 }
 
@@ -529,7 +529,7 @@ function viewRound(){
       <div class="codewrap">
         <p>Sign-up code</p>
         <div class="codetiles" aria-label="Code ${esc(S.code.split("").join(" "))}">${S.code.split("").map(c => `<span class="tile">${esc(c)}</span>`).join("")}</div>
-        <p>Players open GoGolf, tap Join a round and enter this code.</p>
+        <p>Players open RedGOLF, tap Join a round and enter this code.</p>
       </div>
       <div class="row">
         <button class="btn primary" data-act="copy">Copy code</button>
@@ -824,7 +824,7 @@ async function doJoin(follow){
   const code = normCode($("#jcode").value), name = $("#jname").value.trim();
   if (code.length < 4) return toast("Enter the sign-up code from your group.");
   if (!follow && !name) return toast("Enter your name so it shows on the leaderboard.");
-  let r; try { r = await store.getRound(code); } catch { return toast("Couldn't reach GoGolf. Check your connection and try again."); }
+  let r; try { r = await store.getRound(code); } catch { return toast("Couldn't reach RedGOLF. Check your connection and try again."); }
   if (!r) return toast("No round found for " + code + ". Check the code and try again.");
   if (follow || S.readOnly){ setActive(code, null); go("board"); return; }
   const pid = rid("p");
@@ -860,7 +860,7 @@ function saveDraft(){
   S.draft = null; S.courseView = id; render(); window.scrollTo(0, 0);
 }
 async function copyCode(){
-  const text = `Join my GoGolf round "${S.round?.name || ""}" with code ${S.code}`;
+  const text = `Join my RedGOLF round "${S.round?.name || ""}" with code ${S.code}`;
   try { await navigator.clipboard.writeText(S.code); toast("Code " + S.code + " copied."); }
   catch {
     const r = document.createRange(), el = $(".codetiles");
@@ -880,7 +880,7 @@ document.addEventListener("click", async e => {
     case "follow": doJoin(true); break;
     case "start": doStart(); break;
     case "copy": copyCode(); break;
-    case "share": try { await navigator.share({ title: "GoGolf", text: `Join my GoGolf round "${S.round.name}" with code ${S.code}` }); } catch {} break;
+    case "share": try { await navigator.share({ title: "RedGOLF", text: `Join my RedGOLF round "${S.round.name}" with code ${S.code}` }); } catch {} break;
     case "leave": leaveRound(false); break;
     case "addplayer": {
       if (!guard()) break;
