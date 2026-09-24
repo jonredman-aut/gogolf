@@ -210,6 +210,13 @@ window.ggFail = function (title, detail) {
   }
   if (document.getElementById("main")) show(); else document.addEventListener("DOMContentLoaded", show);
 };
+window.addEventListener("unhandledrejection", function (e) {
+  if (!window.ggStarted) window.ggFail("GoGolf couldn't start", String((e.reason && (e.reason.code || e.reason.message)) || e.reason));
+});
+setTimeout(function () {
+  if (!window.ggStarted) window.ggFail("GoGolf is taking too long to start",
+    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 3.");
+}, 25000);
 window.addEventListener("error", function (e) {
   var msg = String(e.message || "");
   if (/syntax|unexpected|invalid|unterminated/i.test(msg)) {
@@ -227,12 +234,16 @@ window.addEventListener("error", function (e) {
   <div class="top-meta" id="topmeta"></div>
 </div></header>
 <div id="banner"></div>
-<main id="main" tabindex="-1"><p class="muted">Loading GoGolf…</p></main>
+<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 3)</p></main>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/*const firebaseConfig = {
+/* ============================================================
+   STEP 1 OF SETUP: paste your Firebase web config here.
+   Firebase console > Project settings > Your apps > Web app.
+   ============================================================ */
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCvmQc4dgt3fvqraUQhdUjD7HbkeRYQCiE",
   authDomain: "gogolf1-ab32a.firebaseapp.com",
   projectId: "gogolf1-ab32a",
