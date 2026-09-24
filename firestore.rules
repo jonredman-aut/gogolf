@@ -1,0 +1,41 @@
+rules_version = '2';
+// GoGolf security rules. Paste into Firebase console > Firestore Database > Rules > Publish.
+// Everyone must be signed in (the app signs players in anonymously and automatically).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function smallName(n) { return n is string && n.size() > 0 && n.size() <= 60; }
+
+    match /courses/{courseId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && smallName(request.resource.data.name)
+        && request.resource.data.holes is list
+        && request.resource.data.holes.size() in [9, 18];
+      allow delete: if signedIn();
+    }
+
+    match /rounds/{code} {
+      allow read: if signedIn();
+      // A round can be created once; it can't be overwritten or changed afterward.
+      allow create: if signedIn()
+        && code.size() >= 4 && code.size() <= 8
+        && request.resource.data.holes is list
+        && request.resource.data.holes.size() in [9, 18];
+      allow update, delete: if false;
+
+      match /players/{playerId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && smallName(request.resource.data.name)
+          && request.resource.data.scores is map;
+        // Scores can change; the player's name and join time can't.
+        allow update: if signedIn()
+          && request.resource.data.name == resource.data.name
+          && request.resource.data.scores is map
+          && request.resource.data.scores.size() <= 18;
+        allow delete: if signedIn();
+      }
+    }
+  }
+}
