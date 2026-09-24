@@ -242,7 +242,7 @@ window.addEventListener("unhandledrejection", function (e) {
 });
 setTimeout(function () {
   if (!window.ggStarted) window.ggFail("GoGolf is taking too long to start",
-    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 4.");
+    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 5.");
 }, 25000);
 window.addEventListener("error", function (e) {
   var msg = String(e.message || "");
@@ -261,7 +261,7 @@ window.addEventListener("error", function (e) {
   <div class="top-meta" id="topmeta"></div>
 </div></header>
 <div id="banner"></div>
-<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 4)</p></main>
+<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 5)</p></main>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -300,6 +300,9 @@ const STD_PARS = [4,4,3,5,4,4,3,4,5, 4,3,5,4,4,3,4,5,4];
 const STD_HCP  = [7,3,15,1,11,5,17,9,13, 8,16,2,10,6,18,12,4,14];
 const VERDICT = {"-3":"Albatross","-2":"Eagle","-1":"Birdie","0":"Par","1":"Bogey","2":"Double bogey","3":"Triple bogey"};
 function markClass(v, par){ const d = v - par; return d <= -2 ? "eagle" : d === -1 ? "birdie" : d === 1 ? "bogey" : d >= 2 ? "dbl" : ""; }
+
+/* ---------- Northeast Arkansas course library (back tees) ---------- */
+const PRESET_COURSES = [{"id": "nea-sage-meadows", "name": "Sage Meadows", "city": "Jonesboro, AR", "tee": "Black", "notes": "Semi-private course. Yardages from the Black tees.", "holes": [{"par": 5, "yds": 510, "hcp": 13}, {"par": 4, "yds": 377, "hcp": 15}, {"par": 5, "yds": 514, "hcp": 9}, {"par": 4, "yds": 374, "hcp": 17}, {"par": 3, "yds": 179, "hcp": 11}, {"par": 4, "yds": 413, "hcp": 1}, {"par": 3, "yds": 205, "hcp": 5}, {"par": 4, "yds": 405, "hcp": 7}, {"par": 4, "yds": 447, "hcp": 3}, {"par": 4, "yds": 369, "hcp": 16}, {"par": 3, "yds": 198, "hcp": 12}, {"par": 4, "yds": 392, "hcp": 4}, {"par": 3, "yds": 179, "hcp": 14}, {"par": 4, "yds": 403, "hcp": 2}, {"par": 5, "yds": 609, "hcp": 6}, {"par": 4, "yds": 409, "hcp": 8}, {"par": 4, "yds": 345, "hcp": 18}, {"par": 5, "yds": 573, "hcp": 10}]}, {"id": "nea-ridgepointe-country-club", "name": "RidgePointe Country Club", "city": "Jonesboro, AR", "tee": "Gold", "notes": "Private course. Yardages from the Gold tees.", "holes": [{"par": 4, "yds": 343, "hcp": 13}, {"par": 4, "yds": 379, "hcp": 1}, {"par": 4, "yds": 360, "hcp": 3}, {"par": 3, "yds": 169, "hcp": 9}, {"par": 5, "yds": 506, "hcp": 11}, {"par": 5, "yds": 521, "hcp": 15}, {"par": 3, "yds": 144, "hcp": 17}, {"par": 4, "yds": 298, "hcp": 5}, {"par": 4, "yds": 398, "hcp": 7}, {"par": 4, "yds": 465, "hcp": 4}, {"par": 4, "yds": 358, "hcp": 8}, {"par": 5, "yds": 492, "hcp": 16}, {"par": 5, "yds": 555, "hcp": 12}, {"par": 4, "yds": 442, "hcp": 2}, {"par": 3, "yds": 136, "hcp": 18}, {"par": 4, "yds": 425, "hcp": 6}, {"par": 3, "yds": 199, "hcp": 10}, {"par": 4, "yds": 349, "hcp": 14}]}, {"id": "nea-jonesboro-country-club", "name": "Jonesboro Country Club", "city": "Jonesboro, AR", "tee": "Blue", "notes": "Private course. Yardages from the Blue tees.", "holes": [{"par": 4, "yds": 401, "hcp": 5}, {"par": 3, "yds": 143, "hcp": 17}, {"par": 5, "yds": 501, "hcp": 11}, {"par": 4, "yds": 339, "hcp": 1}, {"par": 5, "yds": 526, "hcp": 9}, {"par": 3, "yds": 133, "hcp": 15}, {"par": 5, "yds": 508, "hcp": 3}, {"par": 3, "yds": 200, "hcp": 7}, {"par": 4, "yds": 341, "hcp": 13}, {"par": 4, "yds": 367, "hcp": 4}, {"par": 4, "yds": 350, "hcp": 16}, {"par": 3, "yds": 160, "hcp": 10}, {"par": 4, "yds": 380, "hcp": 14}, {"par": 4, "yds": 331, "hcp": 6}, {"par": 4, "yds": 403, "hcp": 2}, {"par": 5, "yds": 475, "hcp": 8}, {"par": 3, "yds": 173, "hcp": 12}, {"par": 4, "yds": 329, "hcp": 18}]}, {"id": "nea-paragould-country-club", "name": "Paragould Country Club", "city": "Paragould, AR", "tee": "Blue", "notes": "Private course. Yardages from the Blue tees.", "holes": [{"par": 4, "yds": 316, "hcp": 16}, {"par": 3, "yds": 109, "hcp": 18}, {"par": 4, "yds": 393, "hcp": 12}, {"par": 4, "yds": 402, "hcp": 2}, {"par": 4, "yds": 386, "hcp": 4}, {"par": 4, "yds": 376, "hcp": 8}, {"par": 3, "yds": 159, "hcp": 14}, {"par": 4, "yds": 418, "hcp": 10}, {"par": 5, "yds": 512, "hcp": 6}, {"par": 4, "yds": 371, "hcp": 15}, {"par": 4, "yds": 425, "hcp": 17}, {"par": 3, "yds": 184, "hcp": 13}, {"par": 5, "yds": 563, "hcp": 7}, {"par": 4, "yds": 376, "hcp": 3}, {"par": 4, "yds": 397, "hcp": 5}, {"par": 3, "yds": 200, "hcp": 9}, {"par": 4, "yds": 381, "hcp": 11}, {"par": 4, "yds": 417, "hcp": 1}]}, {"id": "nea-thunder-bayou-golf-links", "name": "Thunder Bayou Golf Links", "city": "Blytheville, AR", "tee": "Black", "notes": "Public course. Yardages from the Black tees.", "holes": [{"par": 4, "yds": 419, "hcp": 8}, {"par": 5, "yds": 552, "hcp": 6}, {"par": 3, "yds": 169, "hcp": 10}, {"par": 4, "yds": 401, "hcp": 16}, {"par": 5, "yds": 584, "hcp": 12}, {"par": 3, "yds": 184, "hcp": 14}, {"par": 4, "yds": 360, "hcp": 18}, {"par": 4, "yds": 447, "hcp": 4}, {"par": 4, "yds": 471, "hcp": 2}, {"par": 4, "yds": 422, "hcp": 9}, {"par": 5, "yds": 527, "hcp": 13}, {"par": 4, "yds": 410, "hcp": 7}, {"par": 4, "yds": 453, "hcp": 3}, {"par": 3, "yds": 167, "hcp": 15}, {"par": 4, "yds": 357, "hcp": 17}, {"par": 3, "yds": 230, "hcp": 11}, {"par": 4, "yds": 469, "hcp": 1}, {"par": 5, "yds": 610, "hcp": 5}]}, {"id": "nea-rolling-hills-country-club", "name": "Rolling Hills Country Club", "city": "Pocahontas, AR", "tee": "Blue", "notes": "Semi-private course. Yardages from the Blue tees.", "holes": [{"par": 4, "yds": 387, "hcp": 14}, {"par": 3, "yds": 138, "hcp": 12}, {"par": 4, "yds": 296, "hcp": 2}, {"par": 5, "yds": 480, "hcp": 18}, {"par": 4, "yds": 373, "hcp": 8}, {"par": 4, "yds": 384, "hcp": 10}, {"par": 3, "yds": 166, "hcp": 6}, {"par": 5, "yds": 528, "hcp": 16}, {"par": 4, "yds": 323, "hcp": 4}, {"par": 4, "yds": 398, "hcp": 11}, {"par": 5, "yds": 505, "hcp": 17}, {"par": 3, "yds": 165, "hcp": 13}, {"par": 4, "yds": 404, "hcp": 5}, {"par": 4, "yds": 382, "hcp": 7}, {"par": 3, "yds": 215, "hcp": 1}, {"par": 4, "yds": 339, "hcp": 15}, {"par": 4, "yds": 365, "hcp": 9}, {"par": 4, "yds": 417, "hcp": 3}]}, {"id": "nea-cherokee-village-south", "name": "Cherokee Village South", "city": "Cherokee Village, AR", "tee": "Blue", "notes": "Semi-private course. Yardages from the Blue tees.", "holes": [{"par": 4, "yds": 419, "hcp": 11}, {"par": 3, "yds": 198, "hcp": 15}, {"par": 5, "yds": 531, "hcp": 1}, {"par": 4, "yds": 419, "hcp": 7}, {"par": 5, "yds": 541, "hcp": 3}, {"par": 4, "yds": 438, "hcp": 5}, {"par": 4, "yds": 374, "hcp": 13}, {"par": 3, "yds": 164, "hcp": 17}, {"par": 4, "yds": 390, "hcp": 9}, {"par": 4, "yds": 372, "hcp": 16}, {"par": 4, "yds": 375, "hcp": 14}, {"par": 5, "yds": 552, "hcp": 6}, {"par": 3, "yds": 219, "hcp": 12}, {"par": 4, "yds": 462, "hcp": 2}, {"par": 4, "yds": 430, "hcp": 8}, {"par": 3, "yds": 195, "hcp": 10}, {"par": 4, "yds": 394, "hcp": 18}, {"par": 5, "yds": 585, "hcp": 4}]}, {"id": "nea-cherokee-village-north", "name": "Cherokee Village North", "city": "Cherokee Village, AR", "tee": "Blue", "notes": "Semi-private course. Yardages from the Blue tees.", "holes": [{"par": 4, "yds": 380, "hcp": 13}, {"par": 5, "yds": 548, "hcp": 7}, {"par": 4, "yds": 396, "hcp": 1}, {"par": 3, "yds": 146, "hcp": 17}, {"par": 4, "yds": 368, "hcp": 15}, {"par": 5, "yds": 506, "hcp": 3}, {"par": 4, "yds": 409, "hcp": 11}, {"par": 3, "yds": 219, "hcp": 5}, {"par": 4, "yds": 393, "hcp": 9}, {"par": 4, "yds": 330, "hcp": 12}, {"par": 3, "yds": 233, "hcp": 14}, {"par": 5, "yds": 560, "hcp": 2}, {"par": 4, "yds": 437, "hcp": 6}, {"par": 4, "yds": 412, "hcp": 8}, {"par": 5, "yds": 516, "hcp": 4}, {"par": 3, "yds": 142, "hcp": 18}, {"par": 4, "yds": 334, "hcp": 16}, {"par": 4, "yds": 358, "hcp": 10}]}];
 
 /* ---------- stores ---------- */
 function liveStore(db){
@@ -643,6 +646,9 @@ function viewCourses(){
         <span class="muted small">${[c.city, c.tee ? c.tee + " tees" : "", c.holes.length + " holes", t.yds ? t.yds.toLocaleString() + " yds" : ""].filter(Boolean).map(esc).join(", ")}</span>
       </button></li>`; }).join("")}</ul>`
       : `<div class="panel empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${ICONS.courses}</svg><h3 style="margin-top:8px">No courses yet</h3><p class="muted">Add your home course once and every round will use it.</p></div>`}
+    ${S.readOnly || !S.coursesLoaded ? "" : (() => { const missing = PRESET_COURSES.filter(pc => !S.courses.some(c => c.id === pc.id)); return missing.length ? `<div class="panel stack">
+      <div><h3>Northeast Arkansas courses</h3><p class="muted small" style="margin:4px 0 0">${missing.length === PRESET_COURSES.length ? "Add full scorecards for 8 area courses: Sage Meadows, RidgePointe, Jonesboro CC, Paragould CC, Thunder Bayou, Rolling Hills (Pocahontas) and both Cherokee Village courses." : `${missing.length} of the area courses aren't in your list yet.`}</p></div>
+      <button class="btn block" data-act="loadpresets">${missing.length === PRESET_COURSES.length ? "Add all 8 courses" : `Add the ${missing.length} missing`}</button></div>` : ""; })()}
     ${S.readOnly ? "" : `<button class="btn primary block" data-act="newcourse">Add a course</button>`}
   </div>`;
 }
@@ -917,6 +923,15 @@ document.addEventListener("click", async e => {
     case "count": { const n = +v, cur = S.draft.holes;
       S.draft.holes = n > cur.length ? cur.concat(blankHoles(n).slice(cur.length)) : cur.slice(0, n); render(); break; }
     case "savecourse": saveDraft(); break;
+    case "loadpresets": {
+      if (!guard()) break;
+      const missing = PRESET_COURSES.filter(pc => !S.courses.some(c => c.id === pc.id));
+      b.disabled = true;
+      Promise.all(missing.map(({ id, ...c }) => store.saveCourse(id, { ...c, updatedAt: Date.now() })))
+        .then(() => toast(missing.length + " courses added."))
+        .catch(onWriteError);
+      break;
+    }
     case "canceldraft": S.draft = null; render(); break;
     case "opencourse": S.courseView = v; render(); window.scrollTo(0, 0); break;
     case "courseback": S.courseView = null; render(); break;
