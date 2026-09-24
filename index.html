@@ -193,6 +193,33 @@ table.holes{width:100%;border-collapse:collapse;font-size:15px}
 .back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:4px 0 12px;color:var(--accent);font-weight:600}
 .empty{text-align:center;padding:30px 18px}
 .empty svg{width:48px;height:48px;color:var(--muted)}
+.settings-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:0;padding:0;text-align:left;font-size:26px;color:var(--accent)}
+.settings-head h3{color:var(--ink)}
+span.f{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.toggle{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.toggle input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--accent);flex:0 0 auto}
+.toggle b{display:block}
+.toggle small{display:block;color:var(--muted);font-size:14px}
+.skinopts{margin-left:34px;display:grid;gap:12px}
+.teamnames{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.teamsel{width:auto;flex:0 0 auto;padding:6px 8px;font-size:15px;max-width:44%}
+.putts{display:grid;grid-template-columns:auto 52px 56px 52px;justify-content:center;align-items:center;gap:10px;padding:6px 18px 4px}
+.putts-l{font-weight:600;color:var(--muted);margin-right:6px}
+.stepbtn.sm{height:52px;font-size:28px}
+.putts-n{text-align:center;font-family:var(--cond);font-weight:700;font-size:40px;line-height:1}
+.putts-n.empty{color:var(--line)}
+.boardseg{display:flex;margin:0 0 10px;border-color:var(--frame-2)}
+.boardseg button{flex:1;padding:8px 6px;background:var(--frame-2);color:var(--frame-ink)}
+.boardseg button[aria-pressed="true"]{background:var(--tile);color:var(--tile-ink)}
+.skincols,.skinrow{grid-template-columns:52px 1fr}
+.skinrow{display:grid;gap:5px;margin-top:5px}
+.money{font-style:normal;float:right;color:var(--tile-over)}
+.mrow{display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px solid #E1E5E8}
+.mrow:last-child{border-bottom:0}
+.mrow>span:first-child{white-space:nowrap}
+.skinlist{margin-top:10px}
+.under-ink{color:var(--tile-under)} .over-ink{color:var(--tile-over)}
+.board-note{margin-top:8px;font-size:14px;opacity:.9;padding:0 4px}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-size:15px;max-width:min(92vw,520px);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -215,7 +242,7 @@ window.addEventListener("unhandledrejection", function (e) {
 });
 setTimeout(function () {
   if (!window.ggStarted) window.ggFail("GoGolf is taking too long to start",
-    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 3.");
+    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 4.");
 }, 25000);
 window.addEventListener("error", function (e) {
   var msg = String(e.message || "");
@@ -234,7 +261,7 @@ window.addEventListener("error", function (e) {
   <div class="top-meta" id="topmeta"></div>
 </div></header>
 <div id="banner"></div>
-<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 3)</p></main>
+<main id="main" tabindex="-1"><p class="muted">Loading GoGolf… (version 4)</p></main>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -290,7 +317,9 @@ function liveStore(db){
     watchPlayers(code, cb, err){ return db.collection("rounds/" + code + "/players").onSnapshot(s => cb(rows(s)), err); },
     addPlayer(code, id, data){ const p = "rounds/" + code + "/players/" + id; return serial(p, () => db.doc(p).set(data)); },
     removePlayer(code, id){ const p = "rounds/" + code + "/players/" + id; return serial(p, () => db.doc(p).delete()); },
-    setScore(code, id, hole, val){ const p = "rounds/" + code + "/players/" + id; return serial(p, () => db.doc(p).update({ ["scores." + hole]: val })); }
+    setScore(code, id, hole, val, field = "scores"){ const p = "rounds/" + code + "/players/" + id; return serial(p, () => db.doc(p).update({ [field + "." + hole]: val })); },
+    setTeam(code, id, team){ const p = "rounds/" + code + "/players/" + id; return serial(p, () => db.doc(p).update({ team })); },
+    updateRound(code, data){ const p = "rounds/" + code; return serial(p, () => db.doc(p).update(data)); }
   };
 }
 function localStore(){
@@ -311,7 +340,9 @@ function localStore(){
     watchPlayers(code, cb){ return watch(() => cb(coll("rounds/" + code + "/players"))); },
     async addPlayer(code, id, d){ data.set("rounds/" + code + "/players/" + id, clone(d)); emit(); },
     async removePlayer(code, id){ data.delete("rounds/" + code + "/players/" + id); emit(); },
-    async setScore(code, id, hole, val){ const p = data.get("rounds/" + code + "/players/" + id); if (p){ p.scores = { ...(p.scores || {}), [hole]: val }; emit(); } }
+    async setScore(code, id, hole, val, field = "scores"){ const p = data.get("rounds/" + code + "/players/" + id); if (p){ p[field] = { ...(p[field] || {}), [hole]: val }; emit(); } },
+    async setTeam(code, id, team){ const p = data.get("rounds/" + code + "/players/" + id); if (p){ p.team = team; emit(); } },
+    async updateRound(code, d){ const r = data.get("rounds/" + code); if (r){ Object.assign(r, clone(d)); emit(); } }
   };
 }
 
@@ -319,7 +350,7 @@ function localStore(){
 const S = {
   tab: "round", courses: [], coursesLoaded: false,
   code: null, round: undefined, players: [], me: null,
-  scorer: null, hole: 1, courseView: null, draft: null,
+  scorer: null, hole: 1, courseView: null, draft: null, boardView: "players", showSettings: false,
   expanded: null, readOnly: false, pending: {}, armed: null
 };
 let store = null, unsubs = [];
@@ -385,11 +416,17 @@ function summary(p, holes){
   holes.forEach((h, i) => { const v = scoreOf(p, i + 1); if (v != null){ thru++; strokes += v; par += h.par; } });
   return { ...p, thru, strokes, toPar: strokes - par };
 }
-function standings(){
-  if (!S.round) return [];
-  const holes = S.round.holes;
-  const list = S.players.map(p => summary(p, holes))
-    .sort((a, b) => (a.thru === 0) - (b.thru === 0) || a.toPar - b.toPar || b.thru - a.thru || String(a.name).localeCompare(String(b.name)));
+const DEF_SETTINGS = { format: "stroke", teamCount: 2, teamNames: ["Team 1", "Team 2", "Team 3", "Team 4"], skins: false, carry: true, skinValue: "", putts: true };
+const FORMATS = { stroke: "Stroke play", bestball: "Best ball", aggregate: "Team total" };
+function settings(){ const r = (S.round && S.round.settings) || {}; return { ...DEF_SETTINGS, ...r, teamNames: [0,1,2,3].map(i => (r.teamNames && r.teamNames[i]) || DEF_SETTINGS.teamNames[i]) }; }
+function puttsOf(p, hole){
+  const k = "pt:" + p.id + ":" + hole;
+  if (k in S.pending) return S.pending[k];
+  const v = p.putts && p.putts[hole];
+  return typeof v === "number" ? v : null;
+}
+function rank(list){
+  list.sort((a, b) => (a.thru === 0) - (b.thru === 0) || a.toPar - b.toPar || b.thru - a.thru || String(a.name).localeCompare(String(b.name)));
   const started = list.filter(p => p.thru > 0);
   list.forEach(p => {
     if (!p.thru){ p.pos = "–"; return; }
@@ -399,18 +436,66 @@ function standings(){
   });
   return list;
 }
+function standings(){
+  if (!S.round) return [];
+  const holes = S.round.holes;
+  return rank(S.players.map(p => {
+    const s = summary(p, holes);
+    s.putts = holes.reduce((t, _, i) => t + (puttsOf(p, i + 1) || 0), 0);
+    return s;
+  }));
+}
+function teamStandings(){
+  const st = settings(), holes = S.round.holes, out = [];
+  for (let t = 0; t < st.teamCount; t++){
+    const members = S.players.filter(p => p.team === t);
+    let thru = 0, strokes = 0, par = 0;
+    holes.forEach((h, i) => {
+      const vals = members.map(p => scoreOf(p, i + 1));
+      if (st.format === "bestball"){
+        const got = vals.filter(v => v != null);
+        if (got.length){ thru++; strokes += Math.min(...got); par += h.par; }
+      } else if (members.length && vals.every(v => v != null)){
+        thru++; strokes += vals.reduce((a, b) => a + b, 0); par += h.par * members.length;
+      }
+    });
+    out.push({ id: "t" + t, name: st.teamNames[t], members, thru, strokes, toPar: strokes - par });
+  }
+  return rank(out);
+}
+function skinsResult(){
+  const holes = S.round.holes, st = settings(), ps = S.players;
+  const won = {}; ps.forEach(p => won[p.id] = 0);
+  const rows = []; let pot = 1, stalled = false;
+  holes.forEach((h, i) => {
+    if (stalled){ rows.push({ hole: i + 1, status: "open", par: h.par }); return; }
+    const vals = ps.map(p => ({ p, v: scoreOf(p, i + 1) }));
+    const missing = vals.filter(x => x.v == null).map(x => x.p.name);
+    if (!ps.length || missing.length){ stalled = true; rows.push({ hole: i + 1, status: "wait", missing, pot, par: h.par }); return; }
+    const min = Math.min(...vals.map(x => x.v)), low = vals.filter(x => x.v === min);
+    if (low.length === 1){ won[low[0].p.id] += pot; rows.push({ hole: i + 1, status: "won", winner: low[0].p, score: min, pot, par: h.par }); pot = 1; }
+    else { rows.push({ hole: i + 1, status: "tie", score: min, pot, par: h.par, tied: low.length }); pot = st.carry ? pot + 1 : 1; }
+  });
+  return { rows, won, pot };
+}
 const writeTimers = {};
-function setScore(pid, hole, val){
+function setScore(pid, hole, val, field = "scores"){
   if (!guard()) return;
-  const k = pid + ":" + hole;
+  const k = (field === "putts" ? "pt:" : "") + pid + ":" + hole;
   S.pending[k] = val; render();
   clearTimeout(writeTimers[k]);
   writeTimers[k] = setTimeout(() => {
     const v = S.pending[k];
-    store.setScore(S.code, pid, String(hole), v)
+    store.setScore(S.code, pid, String(hole), v, field)
       .then(() => { if (S.pending[k] === v) delete S.pending[k]; render(); })
       .catch(e => { delete S.pending[k]; onWriteError(e); render(); });
   }, 400);
+}
+function saveSettings(patch){
+  if (!guard()) return;
+  const next = { ...settings(), ...patch };
+  S.round = { ...S.round, settings: next }; render();
+  store.updateRound(S.code, { settings: next }).catch(onWriteError);
 }
 
 /* ---------- views ---------- */
@@ -451,6 +536,8 @@ function viewRound(){
         <h3>Players (${S.players.length})</h3>
         <ul class="plist" style="margin-top:6px">
           ${S.players.map(p => `<li><span class="nm">${esc(p.name)}</span>${p.id === S.me ? '<span class="tag">You</span>' : ""}
+            ${settings().format !== "stroke" ? `<select class="inp teamsel" data-team="${esc(p.id)}" aria-label="Team for ${esc(p.name)}" ${S.readOnly ? "disabled" : ""}>
+              <option value="">No team</option>${settings().teamNames.slice(0, settings().teamCount).map((n, i) => `<option value="${i}" ${p.team === i ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>` : ""}
             ${S.readOnly ? "" : `<button class="link" style="color:var(--under)" data-act="rmplayer" data-v="${esc(p.id)}">${S.armed === "rm:" + p.id ? "Tap again to remove" : "Remove"}</button>`}</li>`).join("") || '<li class="muted">No players yet.</li>'}
         </ul>
         ${S.readOnly ? "" : `<div class="row" style="margin-top:12px">
@@ -458,6 +545,7 @@ function viewRound(){
           <button class="btn" data-act="addplayer" style="flex:0 0 auto">Add player</button>
         </div>`}
       </div>
+      ${viewSettings()}
       <div class="row">
         <button class="btn primary" data-act="tab" data-v="score">Enter scores</button>
         <button class="btn" data-act="tab" data-v="board">View leaderboard</button>
@@ -489,6 +577,27 @@ function viewRound(){
   </div>`;
 }
 
+function viewSettings(){
+  const st = settings(), ro = S.readOnly ? "disabled" : "";
+  const seg = (key, opts) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-act="set" data-k2="${key}" data-v="${v}" aria-pressed="${String(st[key]) === String(v)}" ${ro}>${l}</button>`).join("")}</div>`;
+  const tog = (key, label, hint) => `<label class="toggle"><input type="checkbox" data-setting="${key}" ${st[key] ? "checked" : ""} ${ro}><span><b>${label}</b>${hint ? `<small>${hint}</small>` : ""}</span></label>`;
+  const summaryLine = [FORMATS[st.format], st.skins ? "Skins" : "", st.putts ? "Putts" : ""].filter(Boolean).join(", ");
+  return `<div class="panel">
+    <button class="settings-head" data-act="togglesettings" aria-expanded="${S.showSettings}">
+      <span><h3>Game</h3><span class="muted small">${esc(summaryLine)}</span></span><span aria-hidden="true">${S.showSettings ? "−" : "+"}</span></button>
+    ${S.showSettings ? `<div class="stack" style="margin-top:14px">
+      <div><span class="f">Format</span>${seg("format", [["stroke", "Stroke play"], ["bestball", "Best ball"], ["aggregate", "Team total"]])}
+        <p class="muted small" style="margin:6px 0 0">${st.format === "bestball" ? "Each team counts its lowest score on every hole." : st.format === "aggregate" ? "Each team adds up every member's score on every hole." : "Everyone plays their own ball. Playing a scramble? Add each team as one player, like “Team Jon.”"}</p></div>
+      ${st.format !== "stroke" ? `<div><span class="f">Teams</span>${seg("teamCount", [[2, "2"], [3, "3"], [4, "4"]])}
+        <div class="teamnames">${st.teamNames.slice(0, st.teamCount).map((n, i) => `<input class="inp" id="tn-${i}" data-teamname="${i}" maxlength="20" value="${esc(n)}" aria-label="Team ${i + 1} name" ${ro}>`).join("")}</div>
+        <p class="muted small" style="margin:6px 0 0">Pick each player's team in the Players list above.</p></div>` : ""}
+      ${tog("skins", "Skins", "Lowest score alone on a hole wins it.")}
+      ${st.skins ? `<div class="skinopts">${tog("carry", "Carry over ties", "A tied hole adds its skin to the next one.")}
+        <div><label class="f" for="skinval">Value per skin ($, optional)</label><input class="inp" id="skinval" data-setting="skinValue" inputmode="decimal" maxlength="6" value="${esc(st.skinValue)}" placeholder="5" ${ro}></div></div>` : ""}
+      ${tog("putts", "Track putts", "Adds a putts counter on the Score screen.")}
+    </div>` : ""}
+  </div>`;
+}
 function courseTotals(c){
   const par = c.holes.reduce((s, h) => s + (h.par || 0), 0);
   const yds = c.holes.reduce((s, h) => s + (h.yds || 0), 0);
@@ -572,22 +681,26 @@ function viewCourseEditor(){
 }
 
 function scorecardHTML(p, holes, cur){
+  const showPutts = settings().putts;
   const n = holes.length, halves = n === 18 ? [[0, 9, "Out"], [9, 18, "In"]] : [[0, n, "Tot"]];
-  let hRow = '<th class="lbl">Hole</th>', pRow = '<td class="lbl">Par</td>', sRow = '<td class="lbl">Score</td>';
-  let totS = 0, totP = 0;
+  let hRow = '<th class="lbl">Hole</th>', pRow = '<td class="lbl">Par</td>', sRow = '<td class="lbl">Score</td>', uRow = '<td class="lbl">Putts</td>';
+  let totS = 0, totP = 0, totU = 0;
   halves.forEach(([a, b, lab]) => {
-    let hs = 0, hp = 0;
+    let hs = 0, hp = 0, hu = 0;
     for (let i = a; i < b; i++){
       const v = scoreOf(p, i + 1), par = holes[i].par, isCur = cur === i + 1 ? ' class="cur"' : "";
-      hp += par; if (v != null) hs += v;
+      const u = puttsOf(p, i + 1);
+      hp += par; if (v != null) hs += v; if (u != null) hu += u;
+      uRow += `<td${isCur}>${u ?? ""}</td>`;
       hRow += `<th${isCur}>${i + 1}</th>`; pRow += `<td${isCur}>${par}</td>`;
       sRow += `<td${isCur}>${v != null ? `<span class="mk ${markClass(v, par)}">${v}</span>` : ""}</td>`;
     }
-    totS += hs; totP += hp;
+    totS += hs; totP += hp; totU += hu;
+    uRow += `<td class="tot">${hu || ""}</td>`;
     hRow += `<th class="tot">${lab}</th>`; pRow += `<td class="tot">${hp}</td>`; sRow += `<td class="tot">${hs || ""}</td>`;
   });
-  if (n === 18){ hRow += '<th class="tot">Tot</th>'; pRow += `<td class="tot">${totP}</td>`; sRow += `<td class="tot">${totS || ""}</td>`; }
-  return `<div class="scwrap"><table class="sc"><tr>${hRow}</tr><tr>${pRow}</tr><tr>${sRow}</tr></table></div>`;
+  if (n === 18){ hRow += '<th class="tot">Tot</th>'; pRow += `<td class="tot">${totP}</td>`; sRow += `<td class="tot">${totS || ""}</td>`; uRow += `<td class="tot">${totU || ""}</td>`; }
+  return `<div class="scwrap"><table class="sc"><tr>${hRow}</tr><tr>${pRow}</tr><tr>${sRow}</tr>${showPutts ? `<tr>${uRow}</tr>` : ""}</table></div>`;
 }
 const LEGEND = `<div class="legend"><span><span class="mk eagle">3</span>Eagle</span><span><span class="mk birdie">3</span>Birdie</span><span><span class="mk bogey">5</span>Bogey</span><span><span class="mk dbl">6</span>Double+</span></div>`;
 
@@ -620,6 +733,11 @@ function viewScore(){
         <button class="stepbtn" data-act="plus" aria-label="One more stroke" ${S.readOnly ? "disabled" : ""}>+</button>
       </div>
       <div class="verdict">${esc(verdict)}</div>
+      ${settings().putts ? (() => { const u = puttsOf(p, S.hole); return `<div class="putts">
+        <span class="putts-l">Putts</span>
+        <button class="stepbtn sm" data-act="puttminus" aria-label="One fewer putt" ${S.readOnly ? "disabled" : ""}>−</button>
+        <span class="putts-n ${u == null ? "empty" : ""}" aria-live="polite">${u ?? "–"}</span>
+        <button class="stepbtn sm" data-act="puttplus" aria-label="One more putt" ${S.readOnly ? "disabled" : ""}>+</button></div>`; })() : ""}
       <div class="hc-nav">
         <button class="btn" data-act="hole" data-v="${S.hole - 1}" ${S.hole === 1 ? "disabled" : ""}>‹ Hole ${Math.max(1, S.hole - 1)}</button>
         ${v != null && !S.readOnly ? `<button class="link" data-act="clear">Clear</button>` : "<span></span>"}
@@ -632,27 +750,53 @@ function viewScore(){
   </div>`;
 }
 
+function boardTile(p, total){
+  return `<span class="tile ${p.thru ? "" : "blank"}">${esc(p.pos)}</span>
+    <span class="tile name">${esc(p.name)}</span>
+    <span class="tile ${p.thru ? parClass(p.toPar) : "blank"}">${p.thru ? fmtPar(p.toPar) : "–"}</span>
+    <span class="tile ${p.thru ? "" : "blank"}">${p.thru === total ? "F" : p.thru || "–"}</span>`;
+}
 function viewBoard(){
   if (!S.code) return needRound("board");
   if (!S.round) return `<p class="muted">Loading leaderboard…</p>`;
-  const list = standings(), holes = S.round.holes;
+  const st = settings(), holes = S.round.holes;
   const totalPar = holes.reduce((s, h) => s + h.par, 0);
+  const views = [["players", "Players"]].concat(st.format !== "stroke" ? [["teams", "Teams"]] : [], st.skins ? [["skins", "Skins"]] : []);
+  if (!views.some(v => v[0] === S.boardView)) S.boardView = "players";
+  const switcher = views.length > 1 ? `<div class="seg boardseg" role="group" aria-label="Leaderboard view">${views.map(([k, l]) => `<button data-act="boardview" data-v="${k}" aria-pressed="${S.boardView === k}">${l}</button>`).join("")}</div>` : "";
+  let body = "", title = "Leaders";
+  if (S.boardView === "players"){
+    const list = standings();
+    body = list.length ? `<div class="bcols" aria-hidden="true"><span>Pos</span><span>Player</span><span>To par</span><span>Thru</span></div>
+      ${list.map(p => `<button class="brow" data-act="expand" data-v="${esc(p.id)}" aria-expanded="${S.expanded === p.id}" aria-label="${esc(p.name)}, ${p.thru ? "position " + p.pos + ", " + fmtPar(p.toPar) + " through " + p.thru : "not started"}">${boardTile(p, holes.length)}</button>
+        ${S.expanded === p.id ? `<div class="bcard">${scorecardHTML(p, holes)}<div class="small" style="margin-top:8px">${p.thru ? `${p.strokes} strokes through ${p.thru}${st.putts && p.putts ? `, ${p.putts} putts` : ""}` : "No scores yet"}</div></div>` : ""}`).join("")}`
+      : `<div class="board-empty">Nobody has joined yet. Share code <b>${esc(S.code)}</b> to fill the board.</div>`;
+  } else if (S.boardView === "teams"){
+    title = FORMATS[st.format];
+    const list = teamStandings(), unassigned = S.players.filter(p => !(p.team >= 0 && p.team < st.teamCount));
+    body = `<div class="bcols" aria-hidden="true"><span>Pos</span><span>Team</span><span>To par</span><span>Thru</span></div>
+      ${list.map(t => `<button class="brow" data-act="expand" data-v="${t.id}" aria-expanded="${S.expanded === t.id}">${boardTile(t, holes.length)}</button>
+        ${S.expanded === t.id ? `<div class="bcard small">${t.members.length ? t.members.map(m => { const s = summary(m, holes); return `<div class="mrow"><span>${esc(m.name)}</span><span class="${parClass(s.toPar)}-ink">${s.thru ? fmtPar(s.toPar) + " thru " + s.thru : "not started"}</span></div>`; }).join("") : "No players on this team yet. Assign teams in the Round tab."}</div>` : ""}`).join("")}
+      ${unassigned.length ? `<div class="board-note">Not on a team: ${unassigned.map(p => esc(p.name)).join(", ")}. Assign them in the Round tab.</div>` : ""}`;
+  } else {
+    title = "Skins";
+    const r = skinsResult(), val = parseFloat(st.skinValue);
+    const money = n => val > 0 ? " ($" + (n * val).toFixed(val % 1 ? 2 : 0) + ")" : "";
+    const leaders = S.players.map(p => ({ p, n: r.won[p.id] || 0 })).sort((a, b) => b.n - a.n || String(a.p.name).localeCompare(String(b.p.name)));
+    body = `<div class="bcols skincols" aria-hidden="true"><span>Skins</span><span>Player</span></div>
+      ${leaders.map(x => `<div class="brow skinrow"><span class="tile ${x.n ? "" : "blank"}">${x.n}</span><span class="tile name">${esc(x.p.name)}${x.n && val > 0 ? `<em class="money">${money(x.n).trim()}</em>` : ""}</span></div>`).join("") || `<div class="board-empty">No players yet.</div>`}
+      <div class="bcard small skinlist">${r.rows.map(h => `<div class="mrow"><span>Hole ${h.hole}</span><span>${
+        h.status === "won" ? `<b>${esc(h.winner.name)}</b> with ${h.score}${h.pot > 1 ? `, ${h.pot} skins` : ""}` :
+        h.status === "tie" ? `Tied at ${h.score}${st.carry ? ", carries over" : ""}` :
+        h.status === "wait" ? `Waiting on ${h.missing.map(esc).join(", ")}${h.pot > 1 ? ` (${h.pot} skins riding)` : ""}` : "–"}</span></div>`).join("")}</div>`;
+  }
   return `<div class="board" role="region" aria-label="Leaderboard">
-    <div class="board-head"><span class="board-title">Leaders</span><span class="live"><i aria-hidden="true"></i>Live</span></div>
-    ${list.length ? `<div class="bcols" aria-hidden="true"><span>Pos</span><span>Player</span><span>To par</span><span>Thru</span></div>
-    ${list.map(p => `<button class="brow" data-act="expand" data-v="${esc(p.id)}" aria-expanded="${S.expanded === p.id}" aria-label="${esc(p.name)}, ${p.thru ? "position " + p.pos + ", " + fmtPar(p.toPar) + " through " + p.thru : "not started"}">
-        <span class="tile ${p.thru ? "" : "blank"}">${esc(p.pos)}</span>
-        <span class="tile name">${esc(p.name)}</span>
-        <span class="tile ${p.thru ? parClass(p.toPar) : "blank"}">${p.thru ? fmtPar(p.toPar) : "–"}</span>
-        <span class="tile ${p.thru ? "" : "blank"}">${p.thru === holes.length ? "F" : p.thru || "–"}</span>
-      </button>
-      ${S.expanded === p.id ? `<div class="bcard">${scorecardHTML(p, holes)}<div class="small" style="margin-top:8px">${p.thru ? `${p.strokes} strokes through ${p.thru}` : "No scores yet"}</div></div>` : ""}`).join("")}`
-    : `<div class="board-empty">Nobody has joined yet. Share code <b>${esc(S.code)}</b> to fill the board.</div>`}
-    <div class="meta-line"><span>${esc(S.round.courseName)}</span><span>Par ${totalPar}</span><span>Tap a name for the scorecard</span></div>
+    <div class="board-head"><span class="board-title">${esc(title)}</span><span class="live"><i aria-hidden="true"></i>Live</span></div>
+    ${switcher}${body}
+    <div class="meta-line"><span>${esc(S.round.courseName)}</span><span>Par ${totalPar}</span><span>Tap a row for details</span></div>
   </div>
   <div class="legend" style="margin-top:12px"><span style="color:var(--under);font-weight:700">Red</span> under par <span style="color:var(--over);font-weight:700">Green</span> over par</div>`;
 }
-
 const VIEWS = { round: viewRound, courses: viewCourses, score: viewScore, board: viewBoard };
 function render(){
   if (!store) return;
@@ -756,6 +900,16 @@ document.addEventListener("click", async e => {
       break;
     }
     case "expand": S.expanded = S.expanded === v ? null : v; render(); break;
+    case "boardview": S.boardView = v; S.expanded = null; render(); break;
+    case "togglesettings": S.showSettings = !S.showSettings; render(); break;
+    case "set": { const k = b.dataset.k2; saveSettings({ [k]: k === "teamCount" ? +v : v }); break; }
+    case "puttplus": case "puttminus": {
+      const p = S.players.find(x => x.id === S.scorer) || S.players[0]; if (!p) break;
+      const cur = puttsOf(p, S.hole);
+      const nv = Math.max(0, Math.min(10, cur == null ? (a === "puttplus" ? 2 : 1) : cur + (a === "puttplus" ? 1 : -1)));
+      setScore(p.id, S.hole, nv, "putts");
+      break;
+    }
     case "newcourse": if (!guard()) break; S.draft = { id: rid("c"), name: "", city: "", tee: "", notes: "", holes: blankHoles(18) }; S.tab = "courses"; render(); window.scrollTo(0, 0); break;
     case "editcourse": { const c = S.courses.find(x => x.id === v); if (!c) break;
       S.draft = { id: c.id, existing: true, name: c.name || "", city: c.city || "", tee: c.tee || "", notes: c.notes || "", holes: c.holes.map(h => ({ par: h.par, yds: h.yds ?? "", hcp: h.hcp ?? "" })) };
@@ -787,6 +941,23 @@ document.addEventListener("input", e => {
     } else S.draft[f] = el.value;
   }
   if (el.id === "jcode"){ const pos = el.selectionStart; el.value = normCode(el.value); try { el.setSelectionRange(pos, pos); } catch {} }
+});
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (!S.code || !S.round) return;
+  if (el.dataset.setting){
+    const k = el.dataset.setting;
+    saveSettings({ [k]: el.type === "checkbox" ? el.checked : el.value.replace(/[^0-9.]/g, "").slice(0, 6) });
+  } else if (el.dataset.teamname != null){
+    const names = settings().teamNames.slice(); names[+el.dataset.teamname] = el.value.trim().slice(0, 20) || DEF_SETTINGS.teamNames[+el.dataset.teamname];
+    saveSettings({ teamNames: names });
+  } else if (el.dataset.team){
+    if (!guard()) return;
+    const t = el.value === "" ? null : +el.value;
+    const p = S.players.find(x => x.id === el.dataset.team); if (p) p.team = t;
+    store.setTeam(S.code, el.dataset.team, t).catch(onWriteError);
+    render();
+  }
 });
 document.addEventListener("keydown", e => {
   if (e.key !== "Enter") return;
