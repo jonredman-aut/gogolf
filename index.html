@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#1E4A34">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RedGOLF">
+<meta name="author" content="ChiefCode Technologies">
+<meta name="description" content="RedGOLF by ChiefCode Technologies: live golf scoring, leaderboards and tournaments.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛳</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -52,8 +54,11 @@ img{max-width:100%}
 .top-in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 16px}
 .brand{font-family:var(--cond);font-weight:700;font-size:28px;letter-spacing:.5px;line-height:1;display:flex;align-items:center;gap:8px}
 .brand svg{width:22px;height:22px}
+.brand-txt{display:flex;flex-direction:column;gap:3px}
+.brand-txt small{font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.2px;opacity:.85;white-space:nowrap}
+.credit{text-align:center;font-size:13px;color:var(--muted);margin:32px 0 0}
 .top-meta{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;min-width:0}
-.top-round{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;opacity:.9}
+.top-round{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw;opacity:.9}
 .chip-code{font-family:var(--cond);font-weight:700;font-size:17px;letter-spacing:2px;background:var(--tile);color:var(--tile-ink);padding:2px 8px;border-radius:3px}
 .banner{max-width:680px;margin:12px auto 0;padding:10px 14px;border-radius:10px;background:var(--sand);font-size:14px;color:var(--ink)}
 main{max-width:680px;margin:0 auto;padding:16px 16px 120px}
@@ -273,7 +278,7 @@ window.addEventListener("unhandledrejection", function (e) {
 });
 setTimeout(function () {
   if (!window.ggStarted) window.ggFail("RedGOLF is taking too long to start",
-    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 8.");
+    "It couldn't reach Firebase. Check your internet connection, then reload. If this keeps happening, tell Claude this message says version 9.");
 }, 25000);
 window.addEventListener("error", function (e) {
   var msg = String(e.message || "");
@@ -288,11 +293,11 @@ window.addEventListener("error", function (e) {
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V3l11 4-11 4"/><ellipse cx="9" cy="21" rx="5" ry="1.2"/></svg>RedGOLF</div>
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V3l11 4-11 4"/><ellipse cx="9" cy="21" rx="5" ry="1.2"/></svg><span class="brand-txt">RedGOLF<small>by ChiefCode Technologies</small></span></div>
   <div class="top-meta" id="topmeta"></div>
 </div></header>
 <div id="banner"></div>
-<main id="main" tabindex="-1"><p class="muted">Loading RedGOLF… (version 8)</p></main>
+<main id="main" tabindex="-1"><p class="muted">Loading RedGOLF… (version 9)</p></main>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1179,7 +1184,7 @@ function render(){
   const keep = {}; main.querySelectorAll("[data-k]").forEach(el => { if (el.id) keep[el.id] = el.value; });
   if (fid && ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && ae.type !== "checkbox") keep[fid] = ae.value;
   const sx = window.scrollX, sy = window.scrollY;
-  main.innerHTML = VIEWS[S.tab]();
+  main.innerHTML = VIEWS[S.tab]() + '<p class="credit">RedGOLF by ChiefCode Technologies</p>';
   for (const id in keep){ const el = document.getElementById(id); if (el && keep[id] !== "" ) el.value = keep[id]; }
   if (fid){ const el = document.getElementById(fid); if (el){ el.focus({ preventScroll: true }); try { if (sel && sel[0] != null) el.setSelectionRange(sel[0], sel[1]); } catch {} } }
   window.scrollTo(sx, sy);
